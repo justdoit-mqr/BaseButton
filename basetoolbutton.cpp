@@ -12,9 +12,10 @@
  * margin:边缘区域宽度 QToolButton默认的按下下沉效果就是通过该属性控制的
  * color:前景色
  * background-color:背景色
- * 注意:Qt的样式表默认具有子部件继承性，一旦该按钮(baseButton)的父部件显式设置了stylesheet,那么
- * 某些属性就有可能被按钮继承，导致显示异常。解决方法就是父部件设置样式表时指定选择器(特定某个
- * 对象或某个类，不让子部件继承)，或者在该类中显式设置异常的样式属性，避免继承父部件对应的属性。
+ * 注意:Qt的样式表默认具有子部件继承性，一旦该按钮(BaseToolButton)的父部件显式设置了stylesheet,
+ * 那么某些属性就有可能被按钮继承，导致显示异常。解决方法就是父部件设置样式表时指定选择器(特定
+ * 某个对象或某个类，不让子部件继承)，或者在该类中显式设置异常的样式属性，避免继承父部件对应的
+ * 属性。
  */
 #define BTN_NORMAL_STYLE "QToolButton{border-radius:5px;padding:2px;color:black;background-color:lightGray;}"
 #define BTN_PRESSED_STYLE "QToolButton:pressed{border-radius:5px;padding:6px;color:black;background-color:orange;}"
@@ -53,15 +54,11 @@ BaseToolButton::BaseToolButton(ButtonType btnType, int btnIndex, QWidget *parent
     /*防抖定时器*/
     antiShakeTimer = new QTimer(this);
     antiShakeTimer->setSingleShot(true);//单次定时器
-    /*长按定时器*/
-    longPressTimer = new QTimer(this);
-    longPressTimer->setSingleShot(true);//单次定时器
-    connect(longPressTimer,SIGNAL(timeout()),this,SLOT(longPressTimerSlot()));
 
-    this->setBtnStyleSheet(BTN_NORMAL_STYLE,BTN_PRESSED_STYLE,BTN_CHECKED_STYLE,BTN_DISABLED_STYLE);
+    //this->setBtnStyleSheet(BTN_NORMAL_STYLE,BTN_PRESSED_STYLE,BTN_CHECKED_STYLE,BTN_DISABLED_STYLE);
 }
 /*
- *@brief:   设置按钮显示的图标
+ *@brief:   设置按钮显示的图标(正常(非选中)状态)
  *@author:  缪庆瑞
  *@date:    2019.8.19
  *@param:   iconUrl:图标路径，可以是ico或png格式图片
@@ -82,6 +79,35 @@ void BaseToolButton::setBtnIcon(const QString &iconUrl, QSize iconSize, bool sca
     this->setIconSize(iconSize);
 }
 /*
+ *@brief:   设置按钮不同状态下显示的图标
+ * 本例参考自帮助例程:Icons Example，如果是使用样式表则可以通过设置属性参数达到同样的效果
+ * 例:qproperty-icon:url() (disabled | active | normal | selected)? (on | off)? )
+ *@author:  缪庆瑞
+ *@date:    2020.08.10
+ *@param:   normalIcon:正常状态图标路径
+ *@param:   checkedIcon:选中状态图标路径
+ *@param:   disabledIcon:禁用状态图标路径
+ *@return:  iconSize:图标尺寸
+ */
+void BaseToolButton::setBtnIcons(QString normalIcon, QString checkedIcon, QString disabledIcon, QSize iconSize)
+{
+    QIcon icon;
+    if(!normalIcon.isEmpty())
+    {
+        icon.addFile(normalIcon,iconSize,QIcon::Normal,QIcon::Off);
+    }
+    if(!checkedIcon.isEmpty())
+    {
+        icon.addFile(checkedIcon,iconSize,QIcon::Normal,QIcon::On);
+    }
+    if(!disabledIcon.isEmpty())
+    {
+        icon.addFile(disabledIcon,iconSize,QIcon::Disabled,QIcon::Off);
+    }
+    this->setIcon(icon);
+    this->setIconSize(iconSize);
+}
+/*
  *@brief:   设置按钮样式表(默认参数为空则采用QToolButton的默认样式)
  *@author:  缪庆瑞
  *@date:    2019.8.19
@@ -99,20 +125,35 @@ void BaseToolButton::setBtnStyleSheet(const QString &normalStyle,const QString &
  *@brief:   设置按钮长按属性
  *@author:  缪庆瑞
  *@date:    2019.12.17
- *@param:   longPressEnable:长按使能状态
+ *@update:  2020.10.21   修改长按定时器的处理，内存按需分配与释放
+ *@param:   longPressEnabled:长按使能状态
  *@param:  longPressTime:长按时间 ms
  */
-void BaseToolButton::setBtnLongPresseProperty(bool longPressEnable, uint longPressTime)
+void BaseToolButton::setBtnLongPressProperty(bool longPressEnabled, uint longPressTime)
 {
-    this->longPressFlag = longPressEnable;
+    this->longPressEnabled = longPressEnabled;
     this->longPressTime = longPressTime;
-    /* 当鼠标在按钮上按下然后脱离按钮区域时会触发released信号，但不会执行mouseReleaseEvent
-     * 处理函数(释放鼠标才进入该函数)，所以为了确保鼠标离开按钮区域就不再发送长按信号，这里
-     * 关联了released信号和长按定时器的stop槽*/
-    disconnect(this,SIGNAL(released()),longPressTimer,SLOT(stop()));
-    if(longPressFlag)
+    if(this->longPressEnabled)//长按功能使能
     {
-        connect(this,SIGNAL(released()),longPressTimer,SLOT(stop()));
+        //初始化长按定时器
+        if(longPressTimer == NULL)
+        {
+            longPressTimer = new QTimer(this);
+            longPressTimer->setSingleShot(true);//单次定时器
+            connect(longPressTimer,SIGNAL(timeout()),this,SLOT(longPressTimerSlot()));
+            /* 当鼠标在按钮上按下然后脱离按钮区域时会触发released信号，但不会执行mouseReleaseEvent
+             * 处理函数(释放鼠标才进入该函数)，所以为了确保鼠标离开按钮区域就不再发送长按信号，这里
+             * 关联了released信号和长按定时器的stop槽*/
+            connect(this,SIGNAL(released()),longPressTimer,SLOT(stop()));
+        }
+    }
+    else//长按功能禁用
+    {
+        if(longPressTimer != NULL)
+        {
+            longPressTimer->deleteLater();//清理长按定时器
+            longPressTimer = NULL;
+        }
     }
 }
 /*
@@ -166,7 +207,7 @@ void BaseToolButton::mousePressEvent(QMouseEvent *e)
     //开启防抖定时器
     antiShakeTimer->start(antiShakeTime);
     //如果长按使能，则开启长按定时器
-    if(longPressFlag)
+    if(longPressEnabled)
     {
         longPressTimer->start(longPressTime);
     }
@@ -180,7 +221,7 @@ void BaseToolButton::mousePressEvent(QMouseEvent *e)
 void BaseToolButton::mouseReleaseEvent(QMouseEvent *e)
 {
     //如果长按使能，则关闭长按定时器
-    if(longPressFlag)
+    if(longPressEnabled)
     {
         longPressTimer->stop();
     }
@@ -196,8 +237,11 @@ void BaseToolButton::initBtnPropertyValue()
     btnName = "";
     isAutoChecked = true;
     antiShakeTime = 200;
-    longPressFlag = false;
+    /*注:按钮的长按功能默认是不开启的，同时长按定时器默认情况下也不分配内存空间，
+     * 避免资源浪费。*/
+    longPressEnabled = false;
     longPressTime = 3000;
+    longPressTimer = NULL;
 }
 /*
  *@brief:   长按定时器的响应槽
