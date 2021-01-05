@@ -37,6 +37,9 @@ public:
     void setBtnIcons(QString normalIcon,QString checkedIcon,QString disabledIcon,QSize iconSize = QSize(32,32));
     void setBtnStyleSheet(const QString &normalStyle="",const QString &pressedStyle="",
                           const QString &checkedStyle="",const QString &disabledStyle="");
+    //设置按钮文本居左
+    void setBtnTextAlignLeft();
+
     //获取按钮索引号
     int getBtnIndex(){return btnIndex;}
     //设置/获取按钮名称

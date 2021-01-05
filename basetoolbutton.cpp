@@ -122,6 +122,22 @@ void BaseToolButton::setBtnStyleSheet(const QString &normalStyle,const QString &
     this->setStyleSheet(normalStyle+pressedStyle+checkedStyle+disabledStyle);
 }
 /*
+ *@brief:   设置按钮文本居左
+ * 注1:QToolButton在只显示文本的情况下，默认居中对齐，没有提供方便的接口修改为其他
+ * 对齐方式。如果项目中对按钮文本对齐方式统一要求居左/居右时，建议换用QPushButton,
+ * 可以参考该类重新实现一个继承QPushButton的按钮基类，添加一些方便的接口。但如果只
+ * 是个别按钮文本需要左对齐，且依然想使用该类生成按钮，可以调用该接口实现，不过前提
+ * 是按钮类型设置为:ICON_TEXT_H。
+ * 注2:该接口实际是借助QToolButton在水平显示图标+文本时默认居左的特性实现的。
+ *@author:  缪庆瑞
+ *@date:    2020.10.27
+ */
+void BaseToolButton::setBtnTextAlignLeft()
+{
+    this->setIcon(QIcon(QPixmap(1,1)));//Icon必须有效，否则内部会当成ToolButtonTextOnly处理
+    this->setIconSize(QSize(0,0));
+}
+/*
  *@brief:   设置按钮长按属性
  *@author:  缪庆瑞
  *@date:    2019.12.17
