@@ -9,22 +9,23 @@
 
 ### 接口函数：
 ```
-	//设置按钮图标和样式
-	void setBtnIcon(const QString &iconUrl,QSize iconSize = QSize(32,32),bool scaledUp = false);
-	void setBtnStyleSheet(const QString &normalStyle="",const QString &pressedStyle="",const QString &checkedStyle="",const QString &disabledStyle="");
-	//获取按钮索引号
-	int getBtnIndex(){return btnIndex;}
-	//设置/获取按钮名称
-	void setBtnName(QString btnName){this->btnName = btnName;}
-	QString getBtnName(){return this->btnName;}
-	//设置按钮是否可以自动check
-	void setBtnAutoChecked(bool isAutoChecked){this->isAutoChecked = isAutoChecked;}
-	//设置按钮防抖时间 ms
-	void setBtnAntiShakeTime(uint antiShakeTime){this->antiShakeTime = antiShakeTime;}
-
-	//设置按钮长按属性
-	void setBtnLongPresseProperty(bool longPressEnable,uint longPressTime = 3000);
-	void releaseBtn();//手动释放按钮
+    //设置按钮图标和样式
+    void setBtnIcon(const QString &iconUrl,QSize iconSize = QSize(32,32),bool scaledUp = false);
+    void setBtnIcons(QString normalIcon,QString checkedIcon,QString disabledIcon,QSize iconSize = QSize(32,32));
+    void setBtnStyleSheet(const QString &normalStyle="",const QString &pressedStyle="",const QString &checkedStyle="",const QString &disabledStyle="");
+    //设置按钮文本居左
+    void setBtnTextAlignLeft();
+    
+    //设置/获取按钮名称
+    void setBtnName(QString btnName){this->btnName = btnName;}
+    QString getBtnName(){return this->btnName;}
+    //设置按钮是否可以自动check
+    void setBtnAutoChecked(bool isAutoChecked){this->isAutoChecked = isAutoChecked;}
+    //设置按钮防抖属性
+    void setBtnAntiShakeProperty(bool antiShakeEnabled,uint antiShakeTime = 200);
+    //设置按钮长按属性
+    void setBtnLongPresseProperty(bool longPressEnable,uint longPressTime = 3000);
+    void releaseBtn();//手动释放按钮
 ```
 ## 作者联系方式:
 **邮箱:justdoit_mqr@163.com**  

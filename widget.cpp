@@ -6,6 +6,7 @@
 #include "widget.h"
 #include "ui_widget.h"
 #include <QDebug>
+#include <QTime>
 
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
@@ -30,9 +31,10 @@ void Widget::initBaseToolButtonUi()
 {
     //文本(图标)
     BaseToolButton *textOrIconBtn[4];
-    textOrIconBtn[0] = new BaseToolButton(BaseToolButton::TEXT);
+    textOrIconBtn[0] = new BaseToolButton(BaseToolButton::ICON_TEXT_H);
     textOrIconBtn[0]->setText("adcd");
     textOrIconBtn[0]->setCheckable(true);
+    textOrIconBtn[0]->setBtnTextAlignLeft();
 
     textOrIconBtn[1] = new BaseToolButton(BaseToolButton::TEXT);
     textOrIconBtn[1]->setText("中文");
@@ -62,6 +64,8 @@ void Widget::initBaseToolButtonUi()
     textAndIconBtn[0] = new BaseToolButton(BaseToolButton::ICON_TEXT_H);
     textAndIconBtn[0]->setText("QQ");
     textAndIconBtn[0]->setBtnIcon("./images/1.ico",QSize(40,40));
+    textAndIconBtn[0]->setBtnAntiShakeProperty(true,1000);
+    connect(textAndIconBtn[0],SIGNAL(clicked()),this,SLOT(btnClickedSlot()));
 
     textAndIconBtn[1] = new BaseToolButton(BaseToolButton::ICON_TEXT_V);
     textAndIconBtn[1]->setText("WeChat");
@@ -83,6 +87,8 @@ void Widget::initBaseToolButtonUi()
     textAndIconBtn[3] = new BaseToolButton(BaseToolButton::ICON_TEXT_H);
     textAndIconBtn[3]->setText("微信");
     textAndIconBtn[3]->setBtnIcon("./images/4.ico",QSize(40,40));
+    textAndIconBtn[3]->setBtnLongPressProperty(true);
+    connect(textAndIconBtn[3],SIGNAL(longPressSig()),this,SLOT(btnLongPressSlot()));
 
     ui->baseToolButtonHLayout2->addWidget(textAndIconBtn[0]);
     ui->baseToolButtonHLayout2->addWidget(textAndIconBtn[1]);
@@ -92,33 +98,42 @@ void Widget::initBaseToolButtonUi()
     //单选按钮组
     btnGroup = new QButtonGroup(this);
     BaseToolButton *groupBtn[4];
-    groupBtn[0] = new BaseToolButton(BaseToolButton::ICON,1);
+    groupBtn[0] = new BaseToolButton(BaseToolButton::ICON);
     groupBtn[0]->setCheckable(true);
     groupBtn[0]->setBtnIcon("./images/2.ico");
+    groupBtn[0]->setBtnName("groupBtn[0]");
     groupBtn[0]->setBtnStyleSheet(
                 "QToolButton{border-radius:5px;padding:2px;color:black;background-color:lightGray}",
                 "QToolButton:pressed{border-radius:5px;padding:2px;color:black;background-color:orange}",
                 "QToolButton:checked{border-radius:5px;padding:2px;color:black;background-color:blue}"
                 );
-    groupBtn[1] = new BaseToolButton(BaseToolButton::ICON,2);
+    groupBtn[1] = new BaseToolButton(BaseToolButton::ICON);
     groupBtn[1]->setCheckable(true);
     groupBtn[1]->setBtnIcon("./images/4.ico");
+    groupBtn[1]->setBtnName("groupBtn[1]");
     groupBtn[1]->setBtnStyleSheet(
                 "QToolButton{border-radius:5px;padding:2px;color:black;background-color:lightGray}",
                 "QToolButton:pressed{border-radius:5px;padding:2px;color:black;background-color:orange}",
                 "QToolButton:checked{border-radius:5px;padding:2px;color:black;background-color:blue}"
                 );
-    groupBtn[2] = new BaseToolButton(BaseToolButton::ICON,3);
+    groupBtn[2] = new BaseToolButton(BaseToolButton::ICON);
     groupBtn[2]->setCheckable(true);
     groupBtn[2]->setBtnIcon("./images/3.ico");
+    groupBtn[2]->setBtnName("groupBtn[2]");
     groupBtn[2]->setBtnStyleSheet(
                 "QToolButton{border-radius:5px;padding:2px;color:black;background-color:lightGray}",
                 "QToolButton:pressed{border-radius:5px;padding:2px;color:black;background-color:orange}",
                 "QToolButton:checked{border-radius:5px;padding:2px;color:black;background-color:blue}"
                 );
-    groupBtn[3] = new BaseToolButton(BaseToolButton::ICON,4);
+    groupBtn[3] = new BaseToolButton(BaseToolButton::ICON);
     groupBtn[3]->setCheckable(true);
     groupBtn[3]->setBtnIcon("./images/1.ico");
+    groupBtn[3]->setBtnName("groupBtn[3]");
+    groupBtn[3]->setBtnStyleSheet(
+                "QToolButton{border-radius:5px;padding:2px;color:black;background-color:lightGray}",
+                "QToolButton:pressed{border-radius:5px;padding:2px;color:black;background-color:orange}",
+                "QToolButton:checked{border-radius:5px;padding:2px;color:black;background-color:blue}"
+                );
 
     btnGroup->addButton(groupBtn[0],4);
     btnGroup->addButton(groupBtn[1],3);
@@ -141,6 +156,16 @@ void Widget::singleButtonsSlot(int btnIndex)
 {
     qDebug()<<"group index:"<<btnIndex;
     BaseToolButton *btn = qobject_cast<BaseToolButton *>(btnGroup->button(btnIndex));
-    qDebug()<<"btn index:"<<btn->getBtnIndex();
+    qDebug()<<"btn name:"<<btn->getBtnName();
+}
+//防抖测试
+void Widget::btnClickedSlot()
+{
+    qDebug()<<QTime::currentTime().toString("HH:mm:ss.zzz")<<"textAndIconBtn[0] btn clicked.";
+}
+//长按测试
+void Widget::btnLongPressSlot()
+{
+    qDebug()<<"textAndIconBtn[3] btn long press";
 }
 

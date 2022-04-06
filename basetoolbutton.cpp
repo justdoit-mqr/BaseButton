@@ -1,3 +1,9 @@
+/****************************************************************************
+*
+* Copyright (C) 2019-2022 MiaoQingrui. All rights reserved.
+* Author: 缪庆瑞 <justdoit_mqr@163.com>
+*
+****************************************************************************/
 /*
  *@author: 缪庆瑞
  *@date:   2019.8.19
@@ -27,11 +33,10 @@
  *@author:  缪庆瑞
  *@date:    2019.8.20
  *@param:   btnType: 按钮类型
- *@param:   btnIndex:按钮索引号,方便多个按钮关联一个槽，不需要用时默认初始化为-1
  *@param:   parent:父对象
  */
-BaseToolButton::BaseToolButton(ButtonType btnType, int btnIndex, QWidget *parent)
-    :QToolButton(parent),btnIndex(btnIndex)
+BaseToolButton::BaseToolButton(ButtonType btnType,  QWidget *parent)
+    :QToolButton(parent)
 {
     this->initBtnPropertyValue();
     this->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
@@ -51,9 +56,6 @@ BaseToolButton::BaseToolButton(ButtonType btnType, int btnIndex, QWidget *parent
     default:
         break;
     }
-    /*防抖定时器*/
-    antiShakeTimer = new QTimer(this);
-    antiShakeTimer->setSingleShot(true);//单次定时器
 
     //this->setBtnStyleSheet(BTN_NORMAL_STYLE,BTN_PRESSED_STYLE,BTN_CHECKED_STYLE,BTN_DISABLED_STYLE);
 }
@@ -138,6 +140,35 @@ void BaseToolButton::setBtnTextAlignLeft()
     this->setIconSize(QSize(0,0));
 }
 /*
+ *@brief:   设置按钮防抖属性
+ *@author:  缪庆瑞
+ *@date:    2022.4.6
+ *@param:   antiShakeEnabled:防抖使能状态
+ *@param:  antiShakeTime:防抖时间 ms
+ */
+void BaseToolButton::setBtnAntiShakeProperty(bool antiShakeEnabled, uint antiShakeTime)
+{
+    this->antiShakeEnabled = antiShakeEnabled;
+    this->antiShakeTime = antiShakeTime;
+    if(this->antiShakeEnabled)//防抖功能使能
+    {
+        //初始化防抖定时器
+        if(antiShakeTimer == NULL)
+        {
+            antiShakeTimer = new QTimer(this);
+            antiShakeTimer->setSingleShot(true);//单次定时器
+        }
+    }
+    else//防抖功能禁用
+    {
+        if(antiShakeTimer != NULL)
+        {
+            antiShakeTimer->deleteLater();//清理防抖定时器
+            antiShakeTimer = NULL;
+        }
+    }
+}
+/*
  *@brief:   设置按钮长按属性
  *@author:  缪庆瑞
  *@date:    2019.12.17
@@ -209,19 +240,22 @@ void BaseToolButton::nextCheckState()
  */
 void BaseToolButton::mousePressEvent(QMouseEvent *e)
 {
-    //判断防抖定时器是否为激活状态,激活状态(防抖时间未结束)则直接返回不做响应
-    if(antiShakeTimer->isActive())
+    //判断防抖是否使能以及防抖定时器是否为激活状态,激活状态(防抖时间未结束)则直接返回不做响应
+    if(antiShakeEnabled && antiShakeTimer->isActive())
     {
         return;
     }
-    /* 非激活状态则调用父类的mousePressEvent()进行默认处理,并在其后开启防抖定时器
+    /* 非激活状态则调用父类的mousePressEvent()进行默认处理,并在其后根据使能状态开启定时器
      * 查看QAbstractButton::mousePressEvent()的源码实现可知,如果这里没有调用父类的
      * 处理函数，则在mouseReleaseEvent()处理函数中也不会发出released和clicked信号,
      * 即这里添加防抖处理不会引起信号逻辑混乱。
      */
     QToolButton::mousePressEvent(e);
-    //开启防抖定时器
-    antiShakeTimer->start(antiShakeTime);
+    //如果防抖使能，则开启防抖定时器
+    if(antiShakeEnabled)
+    {
+        antiShakeTimer->start(antiShakeTime);
+    }
     //如果长按使能，则开启长按定时器
     if(longPressEnabled)
     {
@@ -252,9 +286,13 @@ void BaseToolButton::initBtnPropertyValue()
 {
     btnName = "";
     isAutoChecked = true;
+    /* 注:按钮的长按和防抖功能默认是不开启的，同时对应定时器默认情况下也不分配
+     * 内存空间，避免资源浪费。*/
+    //防抖
+    antiShakeEnabled = false;
     antiShakeTime = 200;
-    /*注:按钮的长按功能默认是不开启的，同时长按定时器默认情况下也不分配内存空间，
-     * 避免资源浪费。*/
+    antiShakeTimer = NULL;
+    //长按
     longPressEnabled = false;
     longPressTime = 3000;
     longPressTimer = NULL;

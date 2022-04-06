@@ -1,3 +1,9 @@
+/****************************************************************************
+*
+* Copyright (C) 2019-2022 MiaoQingrui. All rights reserved.
+* Author: 缪庆瑞 <justdoit_mqr@163.com>
+*
+****************************************************************************/
 /*
  *@author: 缪庆瑞
  *@date:   2019.8.19
@@ -30,7 +36,7 @@ public:
         ICON_TEXT_V//图标+文本(上下结构)
     };
 
-    BaseToolButton(ButtonType btnType,int btnIndex=-1,QWidget *parent=0);
+    BaseToolButton(ButtonType btnType,QWidget *parent=0);
 
     //设置按钮图标和样式
     void setBtnIcon(const QString &iconUrl,QSize iconSize = QSize(32,32),bool scaledUp = false);
@@ -40,16 +46,13 @@ public:
     //设置按钮文本居左
     void setBtnTextAlignLeft();
 
-    //获取按钮索引号
-    int getBtnIndex(){return btnIndex;}
     //设置/获取按钮名称
     void setBtnName(QString btnName){this->btnName = btnName;}
     QString getBtnName(){return this->btnName;}
     //设置按钮是否可以自动check
     void setBtnAutoChecked(bool isAutoChecked){this->isAutoChecked = isAutoChecked;}
-    //设置按钮防抖时间 ms
-    void setBtnAntiShakeTime(uint antiShakeTime){this->antiShakeTime = antiShakeTime;}
-
+    //设置按钮防抖属性
+    void setBtnAntiShakeProperty(bool antiShakeEnabled,uint antiShakeTime = 200);
     //设置按钮长按属性
     void setBtnLongPressProperty(bool longPressEnabled,uint longPressTime = 3000);
     void releaseBtn();//手动释放按钮
@@ -62,10 +65,10 @@ protected:
 private:
     void initBtnPropertyValue();//初始化按钮属性(参数变量)值
 
-    int btnIndex;//按钮索引号
     QString btnName;//按钮名 类似于objectname,存放一些特定信息
     bool isAutoChecked;//是否可以自动(通过点击)切换check状态  默认为true
     /*按钮防抖*/
+    bool antiShakeEnabled;//防抖使能标记 默认不使能
     QTimer *antiShakeTimer;//按钮防抖定时器
     uint antiShakeTime;//按钮防抖时间 ms
     /*按钮长按*/
