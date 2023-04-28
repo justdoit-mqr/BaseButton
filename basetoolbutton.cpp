@@ -1,63 +1,42 @@
 /****************************************************************************
 *
-* Copyright (C) 2019-2022 MiaoQingrui. All rights reserved.
+* Copyright (C) 2019-2023 MiaoQingrui. All rights reserved.
 * Author: 缪庆瑞 <justdoit_mqr@163.com>
 *
 ****************************************************************************/
 /*
  *@author: 缪庆瑞
  *@date:   2019.8.19
- *@brief:  基类工具按钮(提供实现常用按钮的样式和功能接口)
+ *@brief:  基类工具按钮(提供按钮常用的功能接口实现)
  */
 #include "basetoolbutton.h"
 
 /*这里默认提供一组样式表(父类QToolButton作为选择器,使用pressed,checked,disabled伪状态来设置
  * 按钮不同状态的样式,{}内为声明(属性名:属性值))
- * border-radius:边角弧度半径
- * padding:填充区域宽度,可用来控制content区域(比如图标)的大小
+ * border-radius:边角弧度半径    padding:填充区域宽度,可用来控制content区域(比如图标)的大小
  * margin:边缘区域宽度 QToolButton默认的按下下沉效果就是通过该属性控制的
- * color:前景色
- * background-color:背景色
+ * color:前景色   background-color:背景色
  * 注意:Qt的样式表默认具有子部件继承性，一旦该按钮(BaseToolButton)的父部件显式设置了stylesheet,
- * 那么某些属性就有可能被按钮继承，导致显示异常。解决方法就是父部件设置样式表时指定选择器(特定
- * 某个对象或某个类，不让子部件继承)，或者在该类中显式设置异常的样式属性，避免继承父部件对应的
- * 属性。
+ * 那么某些属性就有可能被按钮继承，导致显示异常。解决方法就是父部件设置样式表时指定选择器(特定某个对
+ * 象或某个类，不让子部件继承)，或者在该类中显式设置异常的样式属性，避免继承父部件对应的属性。
  */
-#define BTN_NORMAL_STYLE "QToolButton{border-radius:5px;padding:2px;color:black;background-color:lightGray;}"
-#define BTN_PRESSED_STYLE "QToolButton:pressed{border-radius:5px;padding:6px;color:black;background-color:orange;}"
-#define BTN_CHECKED_STYLE "QToolButton:checked{border-radius:5px;padding:6px;color:black;background-color:orange;}"
-#define BTN_DISABLED_STYLE "QToolButton:disabled{border-radius:5px;padding:2px;color:white;background-color:lightGray;}"
-
+#define BTN_STYLE "QToolButton{border-radius:5px;padding:2px;color:black;background-color:lightGray;}\
+QToolButton:pressed{padding:6px;background-color:orange;}\
+QToolButton:checked{padding:6px;background-color:orange;}\
+QToolButton:disabled{padding:2px;color:white;background-color:lightGray;}"
 /*
- *@brief:   构造函数，根据button类型，构建对应结构的按钮
+ *@brief:   构造函数
  *@author:  缪庆瑞
  *@date:    2019.8.20
- *@param:   btnType: 按钮类型
  *@param:   parent:父对象
  */
-BaseToolButton::BaseToolButton(ButtonType btnType,  QWidget *parent)
+BaseToolButton::BaseToolButton(QWidget *parent)
     :QToolButton(parent)
 {
     this->initBtnPropertyValue();
     this->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
-    switch (btnType) {//设置按钮类型
-    case TEXT:
-        this->setToolButtonStyle(Qt::ToolButtonTextOnly);
-        break;
-    case ICON:
-        this->setToolButtonStyle(Qt::ToolButtonIconOnly);
-        break;
-    case ICON_TEXT_H:
-        this->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-        break;
-    case ICON_TEXT_V:
-        this->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-        break;
-    default:
-        break;
-    }
 
-    //this->setBtnStyleSheet(BTN_NORMAL_STYLE,BTN_PRESSED_STYLE,BTN_CHECKED_STYLE,BTN_DISABLED_STYLE);
+    //this->setStyleSheet(BTN_STYLE);
 }
 /*
  *@brief:   设置按钮显示的图标(正常(非选中)状态)
@@ -65,10 +44,9 @@ BaseToolButton::BaseToolButton(ButtonType btnType,  QWidget *parent)
  *@date:    2019.8.19
  *@param:   iconUrl:图标路径，可以是ico或png格式图片
  *@param:   iconSize:图标size
- *@param:   scaledUp:图标放大。因为这里图标的大小是通过QAbstractButton::setIconSize()方法
- * 设置的，该方法设置的大小受限于图标文件本身的size，即无法放大。所以这里采用的放大方式
- * 是使用QPixmap放大图标本身，但如果可以的话建议尽量还是选取合适大小的图标，因为靠这里
- * 的放大方式会使图标有些失真。
+ *@param:   scaledUp:图标放大。因为这里图标的大小是通过QAbstractButton::setIconSize()方法设置的，
+ *该方法设置的大小受限于图标文件本身的size，即无法放大。所以这里采用的放大方式是使用QPixmap放大图标本身，
+ *但如果可以的话建议尽量还是选取合适大小的图标，因为靠这里的放大方式会使图标有些失真。
  */
 void BaseToolButton::setBtnIcon(const QString &iconUrl, QSize iconSize, bool scaledUp)
 {
@@ -91,7 +69,8 @@ void BaseToolButton::setBtnIcon(const QString &iconUrl, QSize iconSize, bool sca
  *@param:   disabledIcon:禁用状态图标路径
  *@return:  iconSize:图标尺寸
  */
-void BaseToolButton::setBtnIcons(QString normalIcon, QString checkedIcon, QString disabledIcon, QSize iconSize)
+void BaseToolButton::setBtnIcons(QString normalIcon, QString checkedIcon,
+                                 QString disabledIcon, QSize iconSize)
 {
     QIcon icon;
     if(!normalIcon.isEmpty())
@@ -110,26 +89,12 @@ void BaseToolButton::setBtnIcons(QString normalIcon, QString checkedIcon, QStrin
     this->setIconSize(iconSize);
 }
 /*
- *@brief:   设置按钮样式表(默认参数为空则采用QToolButton的默认样式)
- *@author:  缪庆瑞
- *@date:    2019.8.19
- *@param:   normalStyle:正常样式 "QToolButton{}"
- *@param:   pressedStyle:按下样式 "QToolButton:pressed{}"
- *@param:   checkedStyle:选中样式 "QToolButton:checked{}"
- *@param:   disabledStyle:禁用样式 "QToolButton:disabled{}"
- */
-void BaseToolButton::setBtnStyleSheet(const QString &normalStyle,const QString &pressedStyle,
-                                      const QString &checkedStyle,const QString &disabledStyle)
-{
-    this->setStyleSheet(normalStyle+pressedStyle+checkedStyle+disabledStyle);
-}
-/*
  *@brief:   设置按钮文本居左
  * 注1:QToolButton在只显示文本的情况下，默认居中对齐，没有提供方便的接口修改为其他
  * 对齐方式。如果项目中对按钮文本对齐方式统一要求居左/居右时，建议换用QPushButton,
  * 可以参考该类重新实现一个继承QPushButton的按钮基类，添加一些方便的接口。但如果只
  * 是个别按钮文本需要左对齐，且依然想使用该类生成按钮，可以调用该接口实现，不过前提
- * 是按钮类型设置为:ICON_TEXT_H。
+ * 是按钮类型设置为:ToolButtonTextBesideIcon。
  * 注2:该接口实际是借助QToolButton在水平显示图标+文本时默认居左的特性实现的。
  *@author:  缪庆瑞
  *@date:    2020.10.27
@@ -144,12 +109,12 @@ void BaseToolButton::setBtnTextAlignLeft()
  *@author:  缪庆瑞
  *@date:    2022.4.6
  *@param:   antiShakeEnabled:防抖使能状态
- *@param:  antiShakeTime:防抖时间 ms
+ *@param:   antiShakeMs:防抖时间 ms
  */
-void BaseToolButton::setBtnAntiShakeProperty(bool antiShakeEnabled, uint antiShakeTime)
+void BaseToolButton::setBtnAntiShakeProperty(bool antiShakeEnabled, uint antiShakeMs)
 {
     this->antiShakeEnabled = antiShakeEnabled;
-    this->antiShakeTime = antiShakeTime;
+    this->antiShakeMs = antiShakeMs;
     if(this->antiShakeEnabled)//防抖功能使能
     {
         //初始化防抖定时器
@@ -172,21 +137,22 @@ void BaseToolButton::setBtnAntiShakeProperty(bool antiShakeEnabled, uint antiSha
  *@brief:   设置按钮长按属性
  *@author:  缪庆瑞
  *@date:    2019.12.17
- *@update:  2020.10.21   修改长按定时器的处理，内存按需分配与释放
  *@param:   longPressEnabled:长按使能状态
- *@param:  longPressTime:长按时间 ms
+ *@param:   longPressRespondMs:长按响应时间 ms
+ *@param:   longPressMaxMs:长按最大时间 ms
  */
-void BaseToolButton::setBtnLongPressProperty(bool longPressEnabled, uint longPressTime)
+void BaseToolButton::setBtnLongPressProperty(bool longPressEnabled, uint longPressRespondMs,
+                                             uint longPressMaxMs)
 {
     this->longPressEnabled = longPressEnabled;
-    this->longPressTime = longPressTime;
+    this->longPressRespondMs = longPressRespondMs;
+    this->longPressMaxMs = longPressMaxMs;
     if(this->longPressEnabled)//长按功能使能
     {
         //初始化长按定时器
         if(longPressTimer == NULL)
         {
             longPressTimer = new QTimer(this);
-            longPressTimer->setSingleShot(true);//单次定时器
             connect(longPressTimer,SIGNAL(timeout()),this,SLOT(longPressTimerSlot()));
             /* 当鼠标在按钮上按下然后脱离按钮区域时会触发released信号，但不会执行mouseReleaseEvent
              * 处理函数(释放鼠标才进入该函数)，所以为了确保鼠标离开按钮区域就不再发送长按信号，这里
@@ -219,9 +185,9 @@ void BaseToolButton::releaseBtn()
     mouseReleaseEvent(&mouseEvent);
 }
 /*
- *@brief:   这是QAbstractButton类提供的一个抽象方法,当按钮被点击时会自动调用。该
- * 方法默认的实现是"calls setChecked(!isChecked()) if the button isCheckable()."，这里重新
- * 实现该方法，通过一个标志变量来控制按钮是否可以通过点击自动切换check状态。
+ *@brief:   这是QAbstractButton类提供的一个抽象方法,当按钮被点击时会自动调用。该方法默认的实现是
+ *"calls setChecked(!isChecked()) if the button isCheckable()."，这里重新实现该方法，通过
+ *一个标志变量来控制按钮是否可以通过点击自动切换check状态。
  *@author:  缪庆瑞
  *@date:    2019.09.03
  */
@@ -254,12 +220,13 @@ void BaseToolButton::mousePressEvent(QMouseEvent *e)
     //如果防抖使能，则开启防抖定时器
     if(antiShakeEnabled)
     {
-        antiShakeTimer->start(antiShakeTime);
+        antiShakeTimer->start(antiShakeMs);
     }
     //如果长按使能，则开启长按定时器
     if(longPressEnabled)
     {
-        longPressTimer->start(longPressTime);
+        longPressRespondedCount = 0;
+        longPressTimer->start(longPressRespondMs);
     }
 }
 /*
@@ -286,15 +253,17 @@ void BaseToolButton::initBtnPropertyValue()
 {
     btnName = "";
     isAutoChecked = true;
-    /* 注:按钮的长按和防抖功能默认是不开启的，同时对应定时器默认情况下也不分配
-     * 内存空间，避免资源浪费。*/
+    /* 注:按钮的长按和防抖功能默认是不开启的，同时对应定时器
+     * 默认情况下也不分配内存空间，避免资源浪费。*/
     //防抖
     antiShakeEnabled = false;
-    antiShakeTime = 200;
+    antiShakeMs = 200;
     antiShakeTimer = NULL;
     //长按
     longPressEnabled = false;
-    longPressTime = 3000;
+    longPressRespondMs = 3000;
+    longPressRespondedCount = 0;
+    longPressMaxMs = 3000;
     longPressTimer = NULL;
 }
 /*
@@ -304,6 +273,11 @@ void BaseToolButton::initBtnPropertyValue()
  */
 void BaseToolButton::longPressTimerSlot()
 {
-    emit longPressSig();//上报长按信号
+    longPressRespondedCount++;
+    if(longPressRespondedCount*longPressRespondMs >= longPressMaxMs)
+    {
+        longPressTimer->stop();
+    }
+    emit longPressSig(longPressRespondedCount*longPressRespondMs);//上报长按信号
 }
 

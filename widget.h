@@ -31,7 +31,7 @@ private:
 public slots:
     void singleButtonsSlot(int btnIndex);
     void btnClickedSlot();
-    void btnLongPressSlot();
+    void btnLongPressSlot(uint longPressMs);
 
 };
 
